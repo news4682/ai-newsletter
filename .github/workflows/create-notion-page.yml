@@ -1,0 +1,22 @@
+name: Create Notion Daily Page
+on:
+  push:
+    paths:
+      - 'daily-news-*.json'
+
+jobs:
+  create-page:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create Notion Page
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: |
+          LATEST=$(git diff-tree --no-commit-id -r --name-only HEAD | grep 'daily-news-.*\.json' | head -1)
+          if [ -z "$LATEST" ]; then
+            echo "No daily-news JSON file in this commit"
+            exit 0
+          fi
+          echo "Creating Notion page from: $LATEST"
+          python3 create_notion_page.py "$LATEST"
